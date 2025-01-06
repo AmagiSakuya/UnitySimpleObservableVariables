@@ -23,21 +23,20 @@ namespace AmagiSakuya.ObservableVariables.Demo
 
         void OnDemoEnumChange(ObservableVariablesDemoEnum old, ObservableVariablesDemoEnum now)
         {
-            //Do EveryYouWant
-
-            Debug.Log($"ObservableVariablesDemoEnum,Now Value:{now}");
+            if (old != now)
+                Debug.Log($"ObservableVariablesDemoEnum,{old} -> {now}");
         }
 
         void OnDemoFloatChange(float old, float now)
         {
-
-            Debug.Log($"OnDemoFloatChange,Now Value:{now}");
+            if (old != now)
+                Debug.Log($"OnDemoFloatChange,{old} -> {now}");
         }
 
         void OnDemoBoolChange(bool old, bool now)
         {
-
-            Debug.Log($"OnDemoBoolChange,Now Value:{now}");
+            if (old != now)
+                Debug.Log($"OnDemoBoolChange,{old} -> {now}");
         }
 
         public void ChangeDemoEnumByScript()

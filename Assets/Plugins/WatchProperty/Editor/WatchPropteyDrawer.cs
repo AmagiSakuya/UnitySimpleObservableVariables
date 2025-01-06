@@ -9,7 +9,7 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
-            var valueProperty = property.FindPropertyRelative("m_value");
+            var valueProperty = property.FindPropertyRelative("m_editorValue");
             object targetObject = property.serializedObject.targetObject;
 
             position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);

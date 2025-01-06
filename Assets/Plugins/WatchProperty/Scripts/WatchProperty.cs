@@ -6,9 +6,10 @@ namespace AmagiSakuya.ObservableVariables
     [System.Serializable]
     public class WatchProperty<T>
     {
-        [SerializeField] T m_value;
+        [SerializeField] T m_editorValue;
         T m_initValue;
         bool declarationValue;
+        T m_value;
         public T Value
         {
             get { return m_value; }
@@ -16,39 +17,29 @@ namespace AmagiSakuya.ObservableVariables
             {
                 T oldValue = m_value;
                 m_value = value;
+                m_editorValue = value;
                 OnChangeEvent?.Invoke(oldValue, value);
             }
         }
 
         public Action<T, T> OnChangeEvent;
-        public WatchProperty(T value, Action<T, T> OnChangeCallback = null, bool DoOnChange = false)
+        public WatchProperty(T value)
         {
             declarationValue = true;
-            T oldValue = m_value;
+            m_editorValue = value;
             m_initValue = value;
             m_value = value;
-            OnChangeEvent = OnChangeCallback;
-            if (DoOnChange)
-            {
-                OnChangeEvent?.Invoke(oldValue, value);
-            }
         }
 
-        public WatchProperty(Action<T, T> OnChangeCallback = null, bool DoOnChange = false)
+        public WatchProperty()
         {
             declarationValue = false;
-            T oldValue = m_value;
-            m_value = default(T);
-            OnChangeEvent = OnChangeCallback;
-            if (DoOnChange)
-            {
-                OnChangeEvent?.Invoke(oldValue, default(T));
-            }
+            m_editorValue = default(T);
         }
 
         public void EditorUpdateValue()
         {
-            OnChangeEvent?.Invoke(Value, m_value);
+            Value = m_editorValue;
         }
 
         public void Init()
@@ -59,7 +50,7 @@ namespace AmagiSakuya.ObservableVariables
             }
             else
             {
-                Value = m_value;
+                Value = m_editorValue;
             }
         }
     }
@@ -68,109 +59,85 @@ namespace AmagiSakuya.ObservableVariables
     [System.Serializable]
     public class WatchPropertyInt : WatchProperty<int>
     {
-        public WatchPropertyInt(int value, Action<int, int> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyInt(Action<int, int> callback = null, bool doOnChange = false)
-           : base(callback, doOnChange) { }
+        public WatchPropertyInt(int value) : base(value) { }
+        public WatchPropertyInt() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyFloat : WatchProperty<float>
     {
-        public WatchPropertyFloat(float value, Action<float, float> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyFloat(Action<float, float> callback = null, bool doOnChange = false)
-           : base(callback, doOnChange) { }
+        public WatchPropertyFloat(float value) : base(value) { }
+        public WatchPropertyFloat() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyBool : WatchProperty<bool>
     {
-        public WatchPropertyBool(bool value, Action<bool, bool> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyBool(Action<bool, bool> callback = null, bool doOnChange = false)
-          : base(callback, doOnChange) { }
+        public WatchPropertyBool(bool value) : base(value) { }
+        public WatchPropertyBool() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyString : WatchProperty<string>
     {
-        public WatchPropertyString(string value, Action<string, string> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyString(Action<string, string> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyString(string value) : base(value) { }
+        public WatchPropertyString() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyVector2 : WatchProperty<Vector2>
     {
-        public WatchPropertyVector2(Vector2 value, Action<Vector2, Vector2> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyVector2(Action<Vector2, Vector2> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyVector2(Vector2 value) : base(value) { }
+        public WatchPropertyVector2() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyVector2Int : WatchProperty<Vector2Int>
     {
-        public WatchPropertyVector2Int(Vector2Int value, Action<Vector2Int, Vector2Int> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyVector2Int(Action<Vector2Int, Vector2Int> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyVector2Int(Vector2Int value) : base(value) { }
+        public WatchPropertyVector2Int() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyVector3 : WatchProperty<Vector3>
     {
-        public WatchPropertyVector3(Vector3 value, Action<Vector3, Vector3> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyVector3(Action<Vector3, Vector3> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyVector3(Vector3 value) : base(value) { }
+        public WatchPropertyVector3() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyVector3Int : WatchProperty<Vector3Int>
     {
-        public WatchPropertyVector3Int(Vector3Int value, Action<Vector3Int, Vector3Int> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyVector3Int(Action<Vector3Int, Vector3Int> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyVector3Int(Vector3Int value) : base(value) { }
+        public WatchPropertyVector3Int() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyVector4 : WatchProperty<Vector4>
     {
-        public WatchPropertyVector4(Vector4 value, Action<Vector4, Vector4> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyVector4(Action<Vector4, Vector4> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyVector4(Vector4 value) : base(value) { }
+        public WatchPropertyVector4() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyGameObject : WatchProperty<GameObject>
     {
-        public WatchPropertyGameObject(GameObject value, Action<GameObject, GameObject> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyGameObject(Action<GameObject, GameObject> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyGameObject(GameObject value) : base(value) { }
+        public WatchPropertyGameObject() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyTransform : WatchProperty<Transform>
     {
-        public WatchPropertyTransform(Transform value, Action<Transform, Transform> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyTransform(Action<Transform, Transform> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyTransform(Transform value) : base(value) { }
+        public WatchPropertyTransform() : base() { }
     }
 
     [System.Serializable]
     public class WatchPropertyRectTransform : WatchProperty<RectTransform>
     {
-        public WatchPropertyRectTransform(RectTransform value, Action<RectTransform, RectTransform> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyRectTransform(Action<RectTransform, RectTransform> callback = null, bool doOnChange = false)
-         : base(callback, doOnChange) { }
+        public WatchPropertyRectTransform(RectTransform value) : base(value) { }
+        public WatchPropertyRectTransform() : base() { }
     }
     #endregion
 }

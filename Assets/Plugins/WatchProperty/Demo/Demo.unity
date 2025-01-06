@@ -751,11 +751,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   demoEnum:
-    m_value: 0
+    m_editorValue: 0
   demoFloat:
-    m_value: 2
+    m_editorValue: 0
   demoBool:
-    m_value: 1
+    m_editorValue: 1
 --- !u!4 &1751746465
 Transform:
   m_ObjectHideFlags: 0

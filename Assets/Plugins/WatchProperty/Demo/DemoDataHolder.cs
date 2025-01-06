@@ -10,10 +10,8 @@ namespace AmagiSakuya.ObservableVariables.Demo
     [System.Serializable]
     public class WatchPropertyObservableVariablesDemoEnum : WatchProperty<ObservableVariablesDemoEnum>
     {
-        public WatchPropertyObservableVariablesDemoEnum(ObservableVariablesDemoEnum value, Action<ObservableVariablesDemoEnum, ObservableVariablesDemoEnum> callback = null, bool doOnChange = false)
-            : base(value, callback, doOnChange) { }
-        public WatchPropertyObservableVariablesDemoEnum(Action<ObservableVariablesDemoEnum, ObservableVariablesDemoEnum> callback = null, bool doOnChange = false)
-           : base(callback, doOnChange) { }
+        public WatchPropertyObservableVariablesDemoEnum(ObservableVariablesDemoEnum value) : base(value) { }
+        public WatchPropertyObservableVariablesDemoEnum() : base() { }
     }
 
     public class DemoDataHolder : WatchPropertyDataHolder
