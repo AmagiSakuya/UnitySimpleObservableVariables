@@ -17,7 +17,7 @@
 </p>
 
 ## Why develop?
-The default Unity inspector doesn't handle listening to value changes very well. If you use get and set, a lot of code is required to sync the value with the inspector. To solve this pain point, I wrote this. It's very simple, and anyone can write something to handle it. It's not a difficult task. This is for my own use, but if you find it useful and want to use it, please give me a star!
+The default Unity inspector doesn't handle listening to value changes very well. If you use get and set, a lot of code is required to sync the value with the inspector. To solve this pain point, I wrote this. It's very simple, and anyone can write something to handle it. It's not a difficult task. This is for my own use.
 ##
 
 ## How To Use
@@ -30,10 +30,8 @@ public enum ObservableVariablesDemoEnum { None, Up, Down }
 [System.Serializable]
 public class WatchPropertyObservableVariablesDemoEnum : WatchProperty<ObservableVariablesDemoEnum>
 {
-    public WatchPropertyObservableVariablesDemoEnum(ObservableVariablesDemoEnum value, Action<ObservableVariablesDemoEnum, ObservableVariablesDemoEnum> callback = null, bool doOnChange = false)
-        : base(value, callback, doOnChange) { }
-    public WatchPropertyObservableVariablesDemoEnum(Action<ObservableVariablesDemoEnum, ObservableVariablesDemoEnum> callback = null, bool doOnChange = false)
-       : base(callback, doOnChange) { }
+    public WatchPropertyObservableVariablesDemoEnum(ObservableVariablesDemoEnum value) : base(value) { }
+    public WatchPropertyObservableVariablesDemoEnum() : base() { }
 }
 
 public class DemoDataHolder : WatchPropertyDataHolder
@@ -61,8 +59,7 @@ public class DemoDataHolder : WatchPropertyDataHolder
 
      void OnDemoFloatChange(float old, float now)
      {
-
-         Debug.Log($"OnDemoFloatChange,Now Value:{now}");
+         Debug.Log($"OnDemoFloatChange,{old} -> {now}");
      }
 
      public void ChangeDemoFloatByScript()
@@ -71,7 +68,3 @@ public class DemoDataHolder : WatchPropertyDataHolder
      }
  }
 ```
-
-### Notice
-
-When modifying a variable in the inspector, all OnChange events will be triggered. However, this won't happen in the compiled version of the program, so for me, this is sufficient.
