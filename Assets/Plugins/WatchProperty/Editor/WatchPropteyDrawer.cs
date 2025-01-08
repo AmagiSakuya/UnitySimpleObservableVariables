@@ -11,10 +11,8 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
             EditorGUI.BeginProperty(position, label, property);
             var valueProperty = property.FindPropertyRelative("m_editorValue");
             object targetObject = property.serializedObject.targetObject;
-
-            position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
             EditorGUI.BeginChangeCheck();
-            EditorGUI.PropertyField(position, valueProperty, GUIContent.none);
+            EditorGUI.PropertyField(position, valueProperty, label);
             if (EditorGUI.EndChangeCheck())
             {
                 property.serializedObject.ApplyModifiedProperties();
