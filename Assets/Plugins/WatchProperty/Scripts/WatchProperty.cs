@@ -53,6 +53,12 @@ namespace AmagiSakuya.ObservableVariables
                 Value = m_editorValue;
             }
         }
+
+        public void SetValueWithoutEvent(T value)
+        {
+            m_value = value;
+            m_editorValue = value;
+        }
     }
 
     #region Extend
