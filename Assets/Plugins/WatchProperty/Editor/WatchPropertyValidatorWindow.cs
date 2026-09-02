@@ -126,7 +126,7 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
             foreach (var getter in getters)
             {
                 // 1. 检查有没有拿到 Holder
-                MTST_RCSDataHolder holder = getter.GetHolder();
+                WatchPropertyDataHolder holder = getter.DataHolder;
                 if (holder == null)
                 {
                     m_Results.Add(new ValidationResult

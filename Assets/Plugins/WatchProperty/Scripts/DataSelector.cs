@@ -14,31 +14,55 @@ namespace AmagiSakuya.ObservableVariables
         public string propertyName;
     }
 
-    public class DataSelector : MonoBehaviour
+    public class DataHolderGetter : MonoBehaviour
+    {
+        private WatchPropertyDataHolder m_cachedHolder;
+
+        public WatchPropertyDataHolder DataHolder
+        {
+            get
+            {
+                if (m_cachedHolder == null)
+                {
+                    m_cachedHolder = GetComponentInParent<WatchPropertyDataHolder>();
+                }
+                return m_cachedHolder;
+            }
+        }
+
+        public virtual T GetData<T>() where T : WatchPropertyDataHolder
+        {
+            return DataHolder as T;
+        }
+    }
+
+    public class DataHolderGetter<T> : MonoBehaviour where T : WatchPropertyDataHolder
+    {
+        private T m_cachedHolder;
+
+        public T DataHolder
+        {
+            get
+            {
+                if (m_cachedHolder == null)
+                {
+                    m_cachedHolder = GetComponentInParent<T>();
+                }
+                return m_cachedHolder;
+            }
+        }
+    }
+
+    public class DataSelector : DataHolderGetter
     {
         public WatchPropertyReference targetPropertyRef;
-
-        // 缓存查找到的组件
-        private MTST_RCSDataHolder m_cachedHolder;
-
-        /// <summary>
-        /// 往上寻找第一个 MTST_RCSDataHolder
-        /// </summary>
-        public MTST_RCSDataHolder GetHolder()
-        {
-            if (m_cachedHolder == null)
-            {
-                m_cachedHolder = GetComponentInParent<MTST_RCSDataHolder>();
-            }
-            return m_cachedHolder;
-        }
 
         /// <summary>
         /// 核心扩展用法：根据编辑器选中的值，动态获取具体的 WatchProperty 对象
         /// </summary>
         public object GetSelectedWatchProperty()
         {
-            MTST_RCSDataHolder holder = GetHolder();
+            WatchPropertyDataHolder holder = DataHolder;
             if (holder == null || targetPropertyRef == null || string.IsNullOrEmpty(targetPropertyRef.propertyName))
             {
                 return null;

@@ -3,8 +3,14 @@ using UnityEngine;
 
 namespace AmagiSakuya.ObservableVariables
 {
+    // 1. 定义非泛型接口
+    public interface IWatchProperty
+    {
+        object Value { get; set; }
+    }
+
     [System.Serializable]
-    public class WatchProperty<T>
+    public class WatchProperty<T> : IWatchProperty
     {
         [SerializeField] T m_editorValue;
         T m_initValue;
@@ -20,6 +26,13 @@ namespace AmagiSakuya.ObservableVariables
                 m_editorValue = value;
                 OnChangeEvent?.Invoke(oldValue, value);
             }
+        }
+
+        // 实现接口显式转换
+        object IWatchProperty.Value
+        {
+            get => Value;
+            set => Value = (T)value;
         }
 
         public Action<T, T> OnChangeEvent;

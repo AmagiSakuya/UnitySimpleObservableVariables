@@ -28,11 +28,11 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
             }
 
             // 3. 寻找父级的 Holder
-            MTST_RCSDataHolder holder = script.GetHolder();
+            WatchPropertyDataHolder holder = script.DataHolder;
 
             if (holder == null)
             {
-                EditorGUILayout.HelpBox("在父级节点中未找到 MTST_RCSDataHolder 组件，请检查层级关系！", MessageType.Warning);
+                EditorGUILayout.HelpBox("在父级节点中未找到 WatchPropertyDataHolder 组件，请检查层级关系！", MessageType.Warning);
                 serializedObject.ApplyModifiedProperties();
                 return;
             }
@@ -55,14 +55,14 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
 
             if (rawPropertyNames.Count == 0)
             {
-                EditorGUILayout.HelpBox("MTST_RCSDataHolder 中没有找到任何 WatchProperty 属性！", MessageType.Info);
+                EditorGUILayout.HelpBox("WatchPropertyDataHolder 中没有找到任何 WatchProperty 属性！", MessageType.Info);
                 serializedObject.ApplyModifiedProperties();
                 return;
             }
 
             // 提示当前绑定的父级是谁（置灰显示）
             GUI.enabled = false;
-            EditorGUILayout.ObjectField("DataHolder", holder, typeof(MTST_RCSDataHolder), true);
+            EditorGUILayout.ObjectField("DataHolder", holder, typeof(WatchPropertyDataHolder), true);
             GUI.enabled = true;
 
             // 5. 单独自定义绘制 targetPropertyRef 属性为支持搜索的下拉菜单
