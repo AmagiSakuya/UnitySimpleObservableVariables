@@ -1,5 +1,4 @@
-﻿using MTST_RCS;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -12,6 +11,23 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
     [CustomEditor(typeof(DataSelector), true)]
     public class DataSelectorEditor : Editor
     {
+        private void OnEnable()
+        {
+            // 层级发生任何变化（拖动父子关系、增删节点、撤销等）后立刻重绘面板，
+            // 保证下一次绘制时会重新向上查找 DataHolder，而不是继续显示旧缓存。
+            EditorApplication.hierarchyChanged += OnHierarchyChanged;
+        }
+
+        private void OnDisable()
+        {
+            EditorApplication.hierarchyChanged -= OnHierarchyChanged;
+        }
+
+        private void OnHierarchyChanged()
+        {
+            Repaint();
+        }
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -28,11 +44,20 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
             }
 
             // 3. 寻找父级的 Holder
-            WatchPropertyDataHolder holder = script.DataHolder;
+            //    这里强制刷新缓存：调整过 UI 层级后必须按当前层级重新向上查找，
+            //    否则会一直拿到调整前的旧 DataHolder。
+            WatchPropertyDataHolder holder = script.GetDataHolder(true);
 
             if (holder == null)
             {
                 EditorGUILayout.HelpBox("在父级节点中未找到 WatchPropertyDataHolder 组件，请检查层级关系！", MessageType.Warning);
+
+                if (GUILayout.Button("重新向上查找 DataHolder"))
+                {
+                    holder = script.GetDataHolder(true);
+                    Repaint();
+                }
+
                 serializedObject.ApplyModifiedProperties();
                 return;
             }

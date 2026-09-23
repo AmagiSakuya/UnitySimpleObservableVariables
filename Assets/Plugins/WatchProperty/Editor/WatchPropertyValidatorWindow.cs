@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using MTST_RCS;
-using AmagiSakuya.ObservableVariables;
 
 namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
 {
@@ -126,14 +124,15 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
             foreach (var getter in getters)
             {
                 // 1. 检查有没有拿到 Holder
-                WatchPropertyDataHolder holder = getter.DataHolder;
+                //    全局扫描时强制按当前层级重新查找，避免拿到层级调整前的旧缓存。
+                WatchPropertyDataHolder holder = getter.GetDataHolder(true);
                 if (holder == null)
                 {
                     m_Results.Add(new ValidationResult
                     {
                         targetGetter = getter,
                         propertyName = string.Empty,
-                        errorMsg = "致命错误：该物体的祖先节点中完全没有找到 MTST_RCSDataHolder 组件！",
+                        errorMsg = "致命错误：该物体的祖先节点中完全没有找到 WatchPropertyDataHolder 组件！",
                         isCriticalError = true
                     });
                     continue;

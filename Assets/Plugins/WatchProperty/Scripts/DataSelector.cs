@@ -1,5 +1,4 @@
-﻿using MTST_RCS;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -16,40 +15,131 @@ namespace AmagiSakuya.ObservableVariables
 
     public class DataHolderGetter : MonoBehaviour
     {
-        private WatchPropertyDataHolder m_cachedHolder;
+        // 缓存的 DataHolder。
+        // 注意：这个字段不会被 Unity 序列化，但它会随着组件实例一直存活（编辑器和运行时都一样），
+        // 所以一旦层级关系被调整，缓存就会变成脏数据，必须主动失效，否则会一直指向旧的 DataHolder。
+        [NonSerialized] private WatchPropertyDataHolder m_cachedHolder;
 
         public WatchPropertyDataHolder DataHolder
         {
-            get
+            get { return GetDataHolder(false); }
+        }
+
+        /// <summary>
+        /// 获取自身及所有祖先节点上的 WatchPropertyDataHolder。
+        /// </summary>
+        /// <param name="forceRefresh">
+        /// 为 true 时忽略缓存，强制沿当前层级重新向上查找。
+        /// 编辑器面板每次重绘都会传 true，这样调整完 UI 层级后能立刻拿到最新的 DataHolder。
+        /// </param>
+        public WatchPropertyDataHolder GetDataHolder(bool forceRefresh)
+        {
+            if (forceRefresh || m_cachedHolder == null)
             {
-                if (m_cachedHolder == null)
-                {
-                    m_cachedHolder = GetComponentInParent<WatchPropertyDataHolder>();
-                }
-                return m_cachedHolder;
+                m_cachedHolder = FindDataHolderInParents();
             }
+            return m_cachedHolder;
+        }
+
+        /// <summary>清空缓存，下一次访问 DataHolder 时会重新向上查找。</summary>
+        public void RefreshDataHolder()
+        {
+            m_cachedHolder = null;
+        }
+
+        /// <summary>
+        /// 从自身开始沿父级链向上查找。
+        /// 这里手动遍历而不是用 GetComponentInParent，原因有二：
+        /// 1) GetComponentInParent 会跳过处于非激活状态的节点，UI 面板被隐藏时就找不到 Holder 了；
+        /// 2) Unity 2019 没有 GetComponentInParent(bool includeInactive) 这个重载。
+        /// </summary>
+        protected virtual WatchPropertyDataHolder FindDataHolderInParents()
+        {
+            Transform current = transform;
+            while (current != null)
+            {
+                WatchPropertyDataHolder holder = current.GetComponent<WatchPropertyDataHolder>();
+                if (holder != null)
+                {
+                    return holder;
+                }
+                current = current.parent;
+            }
+            return null;
         }
 
         public virtual T GetData<T>() where T : WatchPropertyDataHolder
         {
             return DataHolder as T;
         }
+
+        /// <summary>
+        /// 层级（父节点）发生变化时立刻让缓存失效。
+        /// 运行时由 Unity 自动回调；编辑器下该回调需要 [ExecuteAlways]/[ExecuteInEditMode] 才会触发，
+        /// 因此编辑器面板不依赖它，而是靠 DataSelectorEditor 里的强制刷新。
+        /// </summary>
+        protected virtual void OnTransformParentChanged()
+        {
+            m_cachedHolder = null;
+        }
+
+        protected virtual void OnEnable()
+        {
+            m_cachedHolder = null;
+        }
     }
 
     public class DataHolderGetter<T> : MonoBehaviour where T : WatchPropertyDataHolder
     {
-        private T m_cachedHolder;
+        [NonSerialized] private T m_cachedHolder;
 
         public T DataHolder
         {
-            get
+            get { return GetDataHolder(false); }
+        }
+
+        /// <summary>
+        /// 获取自身及所有祖先节点上的 T。forceRefresh 为 true 时强制重新向上查找。
+        /// </summary>
+        public T GetDataHolder(bool forceRefresh)
+        {
+            if (forceRefresh || m_cachedHolder == null)
             {
-                if (m_cachedHolder == null)
-                {
-                    m_cachedHolder = GetComponentInParent<T>();
-                }
-                return m_cachedHolder;
+                m_cachedHolder = FindDataHolderInParents();
             }
+            return m_cachedHolder;
+        }
+
+        /// <summary>清空缓存，下一次访问 DataHolder 时会重新向上查找。</summary>
+        public void RefreshDataHolder()
+        {
+            m_cachedHolder = null;
+        }
+
+        /// <summary>从自身开始沿父级链向上查找（不依赖激活状态，理由同 DataHolderGetter）。</summary>
+        protected virtual T FindDataHolderInParents()
+        {
+            Transform current = transform;
+            while (current != null)
+            {
+                T holder = current.GetComponent<T>();
+                if (holder != null)
+                {
+                    return holder;
+                }
+                current = current.parent;
+            }
+            return null;
+        }
+
+        protected virtual void OnTransformParentChanged()
+        {
+            m_cachedHolder = null;
+        }
+
+        protected virtual void OnEnable()
+        {
+            m_cachedHolder = null;
         }
     }
 
