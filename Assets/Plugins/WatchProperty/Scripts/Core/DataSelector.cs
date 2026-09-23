@@ -143,9 +143,95 @@ namespace AmagiSakuya.ObservableVariables
         }
     }
 
+    /// <summary>
+    /// DataSelector 从「哪一个」WatchPropertyDataHolder 取数据。
+    /// </summary>
+    public enum DataHolderScope
+    {
+        /// <summary>最近的祖先 Holder（含自身）。插件原有行为，也是默认值。</summary>
+        NearestParent = 0,
+
+        /// <summary>
+        /// 沿「自身 → 父 → 祖父 → …」向上数第 N 个 Holder。
+        /// 1 = 最近的，2 = 再上一层（父亲的父亲），3 = 再再上一层，依此类推。
+        /// </summary>
+        AncestorLevel = 1,
+
+        /// <summary>
+        /// 手动指定一个 Holder。不受父子关系限制，
+        /// 可以引用与父级同级的节点、叔伯节点，甚至另一棵 Canvas 下的 Holder。
+        /// </summary>
+        Explicit = 2,
+    }
+
     public class DataSelector : DataHolderGetter
     {
         public WatchPropertyReference targetPropertyRef;
+
+        [SerializeField] private DataHolderScope m_scope = DataHolderScope.NearestParent;
+        [SerializeField] private int m_ancestorLevel = 1;
+        [SerializeField] private WatchPropertyDataHolder m_explicitHolder;
+
+        /// <summary>取 Holder 的策略。改动后会立刻让缓存失效，下一次访问按新策略重新解析。</summary>
+        public DataHolderScope Scope
+        {
+            get { return m_scope; }
+            set { m_scope = value; RefreshDataHolder(); }
+        }
+
+        /// <summary>仅在 <see cref="DataHolderScope.AncestorLevel"/> 下生效：1 = 最近的 Holder，2 = 再上一层。</summary>
+        public int AncestorLevel
+        {
+            get { return m_ancestorLevel; }
+            set { m_ancestorLevel = Mathf.Max(1, value); RefreshDataHolder(); }
+        }
+
+        /// <summary>仅在 <see cref="DataHolderScope.Explicit"/> 下生效：手动指定的 Holder。</summary>
+        public WatchPropertyDataHolder ExplicitHolder
+        {
+            get { return m_explicitHolder; }
+            set { m_explicitHolder = value; RefreshDataHolder(); }
+        }
+
+        /// <summary>
+        /// 沿「自身 → 父 → 祖父 → …」收集链路上所有 WatchPropertyDataHolder，index 0 为最近的一个。
+        /// 编辑器面板用它列出可选项；运行时按层级取 Holder 时也走这里。
+        /// 手动遍历而非 GetComponentInParent，理由同基类的 FindDataHolderInParents
+        /// （不能跳过非激活节点，且 Unity 2019 没有 includeInactive 重载）。
+        /// </summary>
+        public static List<WatchPropertyDataHolder> CollectAncestorHolders(Transform start)
+        {
+            List<WatchPropertyDataHolder> result = new List<WatchPropertyDataHolder>();
+            Transform current = start;
+            while (current != null)
+            {
+                WatchPropertyDataHolder holder = current.GetComponent<WatchPropertyDataHolder>();
+                if (holder != null)
+                {
+                    result.Add(holder);
+                }
+                current = current.parent;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 按当前 Scope 配置解析 DataHolder —— 这是插件里唯一决定「用谁」的地方。
+        /// 覆盖基类实现，是因为基类把「撞见第一个就返回」写死了，没法选择更靠上的 Holder。
+        /// </summary>
+        protected override WatchPropertyDataHolder FindDataHolderInParents()
+        {
+            if (m_scope == DataHolderScope.Explicit)
+            {
+                return m_explicitHolder;
+            }
+
+            // NearestParent 就是层级链上的第 1 个，所以两种策略可以共用一条逻辑。
+            int level = m_scope == DataHolderScope.AncestorLevel ? Mathf.Max(1, m_ancestorLevel) : 1;
+
+            List<WatchPropertyDataHolder> chain = CollectAncestorHolders(transform);
+            return level <= chain.Count ? chain[level - 1] : null;
+        }
 
         /// <summary>
         /// 核心扩展用法：根据编辑器选中的值，动态获取具体的 WatchProperty 对象
