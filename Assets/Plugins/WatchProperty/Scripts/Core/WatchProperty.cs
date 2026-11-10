@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AmagiSakuya.ObservableVariables
@@ -7,6 +8,12 @@ namespace AmagiSakuya.ObservableVariables
     public interface IWatchProperty
     {
         object Value { get; set; }
+
+        /// <summary>
+        /// 非泛型写入，且不触发 OnChangeEvent。
+        /// 运行时类型不确定（例如 int 或任意枚举）时，用它做单向同步可避免事件回环。
+        /// </summary>
+        void SetValueWithoutEvent(object value);
     }
 
     [System.Serializable]
@@ -19,11 +26,20 @@ namespace AmagiSakuya.ObservableVariables
         public T Value
         {
             get { return m_value; }
-            set
+            set { SetValue(value, false); }
+        }
+
+        /// <summary>
+        /// 统一写入入口：只有值真正变化时才触发 OnChangeEvent。
+        /// forceNotify 为 true 时无论值是否相同都会触发（供 Init 做首帧强制刷新）。
+        /// </summary>
+        void SetValue(T value, bool forceNotify)
+        {
+            T oldValue = m_value;
+            m_value = value;
+            m_editorValue = value;
+            if (forceNotify || !EqualityComparer<T>.Default.Equals(oldValue, value))
             {
-                T oldValue = m_value;
-                m_value = value;
-                m_editorValue = value;
                 OnChangeEvent?.Invoke(oldValue, value);
             }
         }
@@ -33,6 +49,12 @@ namespace AmagiSakuya.ObservableVariables
         {
             get => Value;
             set => Value = (T)value;
+        }
+
+        void IWatchProperty.SetValueWithoutEvent(object value)
+        {
+            if (value == null) return;
+            SetValueWithoutEvent((T)value);
         }
 
         public Action<T, T> OnChangeEvent;
@@ -55,16 +77,12 @@ namespace AmagiSakuya.ObservableVariables
             Value = m_editorValue;
         }
 
-        public void Init()
+        /// <summary>
+        /// 初始化运行时值。
+        /// </summary>
+        public void Init(bool forceNotify = true)
         {
-            if (declarationValue)
-            {
-                Value = m_initValue;
-            }
-            else
-            {
-                Value = m_editorValue;
-            }
+            SetValue(declarationValue ? m_initValue : m_editorValue, forceNotify);
         }
 
         public void SetValueWithoutEvent(T value)
