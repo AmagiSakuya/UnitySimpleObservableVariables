@@ -14,6 +14,12 @@ namespace AmagiSakuya.ObservableVariables
         /// 运行时类型不确定（例如 int 或任意枚举）时，用它做单向同步可避免事件回环。
         /// </summary>
         void SetValueWithoutEvent(object value);
+
+        /// <summary>
+        /// 强制广播当前值：不修改值，只触发一次 OnChangeEvent(oldValue == newValue)。
+        /// 非泛型调用入口，供不知道具体类型的组件（如 DataGetter）使用。
+        /// </summary>
+        void ForceNotifyCurrent();
     }
 
     [System.Serializable]
@@ -83,6 +89,15 @@ namespace AmagiSakuya.ObservableVariables
         public void Init(bool forceNotify = true)
         {
             SetValue(declarationValue ? m_initValue : m_editorValue, forceNotify);
+        }
+
+        /// <summary>
+        /// 强制广播当前值：不修改值，只触发一次 OnChangeEvent(oldValue == newValue)。
+        /// 用于需要让订阅方按当前数据重新刷新一次的场景。
+        /// </summary>
+        public void ForceNotifyCurrent()
+        {
+            OnChangeEvent?.Invoke(m_value, m_value);
         }
 
         public void SetValueWithoutEvent(T value)

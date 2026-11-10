@@ -22,7 +22,7 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
         // 手动绘制的字段，不能在 DrawPropertiesExcluding 里重复绘制。
         private static readonly string[] ManuallyDrawnFields =
         {
-            "m_Script", "targetPropertyRef", "m_scope", "m_ancestorLevel", "m_explicitHolder"
+            "m_Script", "targetPropertyRef", "m_scope", "m_ancestorLevel", "m_explicitHolder", "forceNotifyOnEnable"
         };
 
         private void OnEnable()
@@ -194,7 +194,16 @@ namespace AmagiSakuya.ObservableVariables.ObservableVariablesEditor
                 dropdown.Show(buttonRect);
             }
 
-            // 6. 排除手动绘制的字段，绘制其余所有默认属性
+            // 6. DataGetter 专属开关：OnEnable 时强制触发所选 WatchProperty 的 Notify
+            SerializedProperty forceNotifyProp = serializedObject.FindProperty("forceNotifyOnEnable");
+            if (forceNotifyProp != null)
+            {
+                EditorGUILayout.PropertyField(forceNotifyProp,
+                    new GUIContent("在OnEnable时 强制触发Notify",
+                        "勾选后，组件在 OnEnable 时会对所选 WatchProperty 调用 ForceNotifyCurrent()，强制广播一次当前值"));
+            }
+
+            // 7. 排除手动绘制的字段，绘制其余所有默认属性
             DrawPropertiesExcluding(serializedObject, ManuallyDrawnFields);
 
             serializedObject.ApplyModifiedProperties();
